@@ -15,25 +15,33 @@
 -record(reading, {station, date, type, value}).
 -record(monitor, {stations, readings}).
 
-createMonitor() -> #monitor{stations=[], readings=[]}.
+createMonitor() -> #monitor{stations=#{}, readings=[]}.
 
 addStation(Coords, Name, #monitor{stations = Stations, readings = Readings}) ->
-  #monitor{stations = [#station{coords = Coords, name = Name} | Stations], readings = Readings}.
+  case maps:is_key(Name, Stations) orelse maps:is_key(Coords, Stations) of
+    true -> throw("Station already exists");
+    false -> S = #station{coords = Coords, name = Name},
+      #monitor{stations = Stations#{Coords => S, Name => S}, readings = Readings}
+  end.
 
 addValue(Station, Date, Type, Value, #monitor{stations = Stations, readings = Readings}) ->
-  #monitor{stations = Stations, readings =
-  [ #reading{station = Station, date = Date, type = Type, value = Value} | Readings]}.
+  case maps:is_key(Station, Stations) of
+    false -> throw("Station does not exists");
+    true -> #monitor{stations = Stations, readings =
+    [#reading{station = maps:get(Station, Stations), date = Date, type = Type, value = Value} | Readings]}
+  end.
 
 removeValue(Station, Date, Type, #monitor{stations = Stations, readings = Readings}) ->
   #monitor{stations = Stations, readings =
-  [R || R <- Readings, R /= R#reading{station = Station, date = Date, type = Type}]}.
+  [R || R <- Readings, R /= R#reading{station = maps:get(Station,Stations), date = Date, type = Type}]}.
 
-getOneValue(Station, Date, Type, #monitor{readings = Readings}) ->
-  [R] = [R#reading.value || R <- Readings, R == R#reading{station = Station, date = Date, type = Type}],
+getOneValue(Station, Date, Type, #monitor{stations = Stations, readings = Readings}) ->
+  [R] = [R#reading.value
+    || R <- Readings, R == R#reading{station = maps:get(Station, Stations), date = Date, type = Type}],
   R.
 
-getStationMean(Station, Type, #monitor{readings = Readings}) ->
-  R = [R#reading.value || R <- Readings, R == R#reading{station = Station, type = Type}],
+getStationMean(Station, Type, #monitor{stations = Stations, readings = Readings}) ->
+  R = [R#reading.value || R <- Readings, R == R#reading{station = maps:get(Station, Stations), type = Type}],
   lists:sum(R) / length(R).
 
 getDailyMean(Date, Type, #monitor{readings = Readings}) ->
