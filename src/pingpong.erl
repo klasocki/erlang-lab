@@ -23,6 +23,8 @@ ping(Sum)->
               timer:sleep(1),
               io:format("Ping ~w~n", [Sum]),
               ping(N + Sum)
+  after 20000 ->
+    ok
   end.
 
 pong(Sum) ->
@@ -33,6 +35,8 @@ pong(Sum) ->
           timer:sleep(1),
           io:format("Pong ~w~n", [Sum]),
           pong(Sum + N)
+  after 20000 ->
+    ok
   end.
 
 start() ->
