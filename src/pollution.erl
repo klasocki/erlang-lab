@@ -89,8 +89,3 @@ getDailyMeanValid(Readings, Date, Type) ->
 mean([]) -> throw("No readings for given arguments ");
 mean(L) -> lists:sum(L) / length(L).
 
-
-
-
-
-
