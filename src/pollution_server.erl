@@ -10,9 +10,10 @@
 -author("kariok").
 
 %% API
--export([start/0, stop/0, removeValue/3, addStation/2, addValue/4, getDailyMean/2, getOneValue/3, getStationMean/2]).
--import(pollution,
-[removeValue/4, addStation/3, addValue/5, createMonitor/0, getDailyMean/3, getOneValue/4, getStationMean/3]).
+-export([start/0, stop/0, removeValue/3, addStation/2, addValue/4, getDailyMean/2, getOneValue/3,
+  getStationMean/2, getPredictedIndex/3]).
+-import(pollution, [removeValue/4, addStation/3, addValue/5, createMonitor/0, getDailyMean/3,
+getOneValue/4, getStationMean/3, getPredictedIndex/4]).
 
 loop(M) ->
   receive
@@ -22,6 +23,7 @@ loop(M) ->
     {PID, {getDailyMean, Date, Type}} -> PID ! getDailyMean(Date, Type, M), loop(M);
     {PID, {getOneValue, Station, Date, Type}} -> PID ! getOneValue(Station, Date, Type, M), loop(M);
     {PID, {getStationMean, Station, Type}} -> PID ! getStationMean(Station, Type, M), loop(M);
+    {PID, {getPredictedIndex, Station, Date, Type}} -> PID ! getPredictedIndex(Station, Date, Type, M), loop(M);
     stop -> ok
   end.
 
@@ -46,4 +48,4 @@ removeValue(Station, Date, Type) -> call({removeValue, Station, Date, Type}).
 getDailyMean(Date, Type) -> call({getDailyMean, Date, Type}).
 getOneValue(Station, Date, Type) -> call({getOneValue, Station, Date, Type}).
 getStationMean(Station, Type) -> call({getStationMean, Station, Type}).
-
+getPredictedIndex(Station, Date, Type) -> call({getPredictedIndex, Station, Date, Type}).
