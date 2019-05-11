@@ -11,7 +11,7 @@
 
 %% API
 -export([start/0, stop/0, removeValue/3, addStation/2, addValue/4, getDailyMean/2, getOneValue/3,
-  getStationMean/2, getPredictedIndex/3]).
+  getStationMean/2, getPredictedIndex/3, crash/0]).
 -import(pollution, [removeValue/4, addStation/3, addValue/5, createMonitor/0, getDailyMean/3,
 getOneValue/4, getStationMean/3, getPredictedIndex/4]).
 
@@ -24,8 +24,11 @@ loop(M) ->
     {PID, {getOneValue, Station, Date, Type}} -> PID ! getOneValue(Station, Date, Type, M), loop(M);
     {PID, {getStationMean, Station, Type}} -> PID ! getStationMean(Station, Type, M), loop(M);
     {PID, {getPredictedIndex, Station, Date, Type}} -> PID ! getPredictedIndex(Station, Date, Type, M), loop(M);
+    {crash} -> 1/0, loop(M);
     stop -> ok
   end.
+
+crash() -> server ! {crash}.
 
 call(Message) ->
   server ! {self(), Message},
@@ -37,7 +40,7 @@ init() ->
   loop(createMonitor()).
 
 start() ->
-  register(server, spawn(fun() -> init() end)).
+  register(server, spawn_link(fun() -> init() end)).
 
 stop() ->
   server ! stop.
